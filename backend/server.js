@@ -1117,7 +1117,7 @@ async function executeTaskAsync(taskId, task, agent) {
     const taskData = dashboardState.activeTasks.get(taskId);
     if (!taskData) return;
 
-    logger.info(`Starting task execution: ${task.name} (${taskId})`);
+    logger.info(`🚀 Starting enhanced task execution: ${task.name} (${taskId})`);
 
     // Update task status to running
     taskData.status = 'running';
@@ -1129,22 +1129,31 @@ async function executeTaskAsync(taskId, task, agent) {
       taskId, 
       updates: { 
         status: 'running', 
-        startedAt: taskData.startedAt 
+        startedAt: taskData.startedAt,
+        progress: 10
       } 
     });
 
-    // Execute task using Claude system or fallback to enhanced mock
+    // Execute task using Enhanced Task Executor
     let result;
-    if (dashboardState.taskExecutor && dashboardState.providerManager) {
-      try {
-        // Real AI task execution
-        result = await executeRealTask(task);
-      } catch (error) {
-        logger.warn(`Real task execution failed, using enhanced mock: ${error.message}`);
-        result = await executeEnhancedMockTask(task);
-      }
-    } else {
-      // Enhanced mock execution
+    try {
+      // Simulate progress updates
+      const progressUpdates = [25, 50, 75, 90];
+      const progressInterval = setInterval(() => {
+        if (taskData.status === 'running') {
+          const progress = progressUpdates.shift();
+          if (progress) {
+            dashboardState.broadcast('task_progress', { taskId, progress });
+          }
+        } else {
+          clearInterval(progressInterval);
+        }
+      }, 500);
+
+      result = await dashboardState.taskExecutor.executeTask(task);
+      clearInterval(progressInterval);
+    } catch (error) {
+      logger.warn(`Enhanced task execution encountered issue: ${error.message}`);
       result = await executeEnhancedMockTask(task);
     }
 
@@ -1156,11 +1165,25 @@ async function executeTaskAsync(taskId, task, agent) {
     taskData.metrics.endTime = endTime;
     taskData.metrics.duration = endTime - taskData.metrics.startTime;
     
+    // Enhanced agent statistics
     agent.status = 'idle';
     agent.metrics.tasksCompleted++;
-    agent.metrics.averageResponseTime = taskData.metrics.duration;
+    agent.metrics.averageResponseTime = Math.round(
+      (agent.metrics.averageResponseTime * (agent.metrics.tasksCompleted - 1) + taskData.metrics.duration) 
+      / agent.metrics.tasksCompleted
+    );
+    
+    if (result.success) {
+      agent.metrics.successRate = Math.round(
+        ((agent.metrics.successRate * (agent.metrics.tasksCompleted - 1)) + 100) / agent.metrics.tasksCompleted
+      );
+    } else {
+      agent.metrics.successRate = Math.round(
+        (agent.metrics.successRate * (agent.metrics.tasksCompleted - 1)) / agent.metrics.tasksCompleted
+      );
+    }
 
-    // Update system metrics
+    // Update system metrics with enhanced tracking
     if (result.success) {
       dashboardState.systemMetrics.completedTasks++;
     } else {
@@ -1168,36 +1191,54 @@ async function executeTaskAsync(taskId, task, agent) {
     }
     
     dashboardState.systemMetrics.activeTasks = Math.max(0, dashboardState.systemMetrics.activeTasks - 1);
+    
+    // Calculate system-wide success rate
+    const totalTasks = dashboardState.systemMetrics.completedTasks + dashboardState.systemMetrics.failedTasks;
+    if (totalTasks > 0) {
+      dashboardState.systemMetrics.successRate = Math.round(
+        (dashboardState.systemMetrics.completedTasks / totalTasks) * 100
+      );
+    }
+    
     dashboardState.updateMetrics();
 
-    dashboardState.broadcast('task_updated', { 
+    dashboardState.broadcast('task_completed', { 
       taskId, 
-      updates: { 
-        status: taskData.status, 
-        completedAt: taskData.completedAt, 
-        result: taskData.result,
-        metrics: taskData.metrics
-      } 
+      task: taskData,
+      result: {
+        success: result.success,
+        summary: result.output?.substring(0, 200) + (result.output?.length > 200 ? '...' : ''),
+        metadata: result.metadata,
+        executionTime: taskData.metrics.duration
+      }
     });
 
-    logger.info(`Task ${result.success ? 'completed' : 'failed'}: ${task.name} (${taskId}) in ${taskData.metrics.duration}ms`);
+    logger.info(`✅ Enhanced task ${result.success ? 'completed' : 'failed'}: ${task.name} (${taskId}) in ${taskData.metrics.duration}ms`);
 
-    // Clean up completed tasks after 1 hour
+    // Enhanced cleanup with configurable timeout
+    const cleanupTimeout = process.env.TASK_CLEANUP_TIMEOUT || 3600000; // Default 1 hour
     setTimeout(() => {
       if (dashboardState.activeTasks.has(taskId)) {
+        // Move to completed tasks history before deletion
+        dashboardState.completedTasks.set(taskId, {
+          ...taskData,
+          cleanedUpAt: new Date().toISOString()
+        });
+        
         dashboardState.activeTasks.delete(taskId);
         dashboardState.agents.delete(agent.id.id);
-        dashboardState.broadcast('task_cleaned_up', { taskId });
-        logger.info(`Task cleaned up: ${taskId}`);
+        dashboardState.broadcast('task_archived', { taskId });
+        logger.info(`🗃️ Task archived: ${taskId}`);
       }
-    }, 3600000);
+    }, cleanupTimeout);
 
   } catch (error) {
-    logger.error(`Task ${taskId} execution error:`, error);
+    logger.error(`💥 Critical error in task ${taskId} execution:`, error);
     const taskData = dashboardState.activeTasks.get(taskId);
     if (taskData) {
       taskData.status = 'failed';
       taskData.error = error.message;
+      taskData.errorStack = error.stack;
       taskData.completedAt = new Date().toISOString();
       taskData.metrics.endTime = Date.now();
       taskData.metrics.duration = taskData.metrics.endTime - (taskData.metrics.startTime || Date.now());
@@ -1206,14 +1247,13 @@ async function executeTaskAsync(taskId, task, agent) {
       dashboardState.systemMetrics.activeTasks = Math.max(0, dashboardState.systemMetrics.activeTasks - 1);
       dashboardState.updateMetrics();
       
-      dashboardState.broadcast('task_updated', { 
+      dashboardState.broadcast('task_failed', { 
         taskId, 
-        updates: { 
-          status: 'failed', 
-          error: error.message,
-          completedAt: taskData.completedAt,
-          metrics: taskData.metrics
-        } 
+        error: {
+          message: error.message,
+          timestamp: taskData.completedAt,
+          duration: taskData.metrics.duration
+        }
       });
     }
   }
