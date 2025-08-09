@@ -1,0 +1,15 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Disallow: /api/
+Disallow: /config
+Disallow: /_internal
+
+# Allow access to main dashboard
+Allow: /
+Allow: /dashboard
+Allow: /models
+Allow: /tasks
+Allow: /agents
+
+# Sitemap
+Sitemap: https://claude-flow-dashboard.com/sitemap.xml
