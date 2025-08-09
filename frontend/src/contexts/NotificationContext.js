@@ -1,18 +1,18 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
+import toast from 'react-hot-toast';
 import { 
   CheckCircleIcon, 
-  ExclamationCircleIcon, 
-  InformationCircleIcon,
-  XCircleIcon,
-  XMarkIcon
+  ExclamationTriangleIcon, 
+  InformationCircleIcon, 
+  XCircleIcon 
 } from '@heroicons/react/24/outline';
 
 const NotificationContext = createContext();
 
-export const useNotifications = () => {
+export const useNotification = () => {
   const context = useContext(NotificationContext);
   if (!context) {
-    throw new Error('useNotifications must be used within a NotificationProvider');
+    throw new Error('useNotification must be used within a NotificationProvider');
   }
   return context;
 };
@@ -20,29 +20,27 @@ export const useNotifications = () => {
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
 
+  // Enhanced toast configurations
+  const toastConfig = {
+    duration: 4000,
+    position: 'top-right',
+    style: {
+      borderRadius: '8px',
+      padding: '12px 16px',
+      fontSize: '14px',
+      maxWidth: '400px'
+    }
+  };
+
   const addNotification = useCallback((notification) => {
-    const id = Date.now() + Math.random();
+    const id = `notification-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const newNotification = {
       id,
-      type: 'info',
-      title: '',
-      message: '',
-      duration: 5000,
-      persistent: false,
-      actions: [],
-      ...notification,
-      timestamp: new Date()
+      timestamp: new Date().toISOString(),
+      ...notification
     };
 
-    setNotifications(prev => [...prev, newNotification]);
-
-    // Auto remove non-persistent notifications
-    if (!newNotification.persistent) {
-      setTimeout(() => {
-        removeNotification(id);
-      }, newNotification.duration);
-    }
-
+    setNotifications(prev => [newNotification, ...prev.slice(0, 99)]); // Keep only last 100
     return id;
   }, []);
 
@@ -50,136 +48,295 @@ export const NotificationProvider = ({ children }) => {
     setNotifications(prev => prev.filter(notification => notification.id !== id));
   }, []);
 
-  const clearAll = useCallback(() => {
+  const clearAllNotifications = useCallback(() => {
     setNotifications([]);
   }, []);
 
-  // Convenience methods
+  // Success notification
   const success = useCallback((message, options = {}) => {
-    return addNotification({
+    const notification = {
       type: 'success',
+      title: options.title || 'Success',
       message,
       ...options
-    });
+    };
+
+    const id = addNotification(notification);
+
+    toast.success(
+      <div className="flex items-start space-x-3">
+        <CheckCircleIcon className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+        <div className="flex-1 min-w-0">
+          {notification.title && (
+            <p className="text-sm font-medium text-gray-900 mb-1">
+              {notification.title}
+            </p>
+          )}
+          <p className="text-sm text-gray-600">{message}</p>
+        </div>
+      </div>,
+      {
+        ...toastConfig,
+        duration: options.duration || toastConfig.duration,
+        style: {
+          ...toastConfig.style,
+          background: '#f0f9ff',
+          border: '1px solid #10b981',
+          color: '#065f46'
+        }
+      }
+    );
+
+    return id;
   }, [addNotification]);
 
+  // Error notification
   const error = useCallback((message, options = {}) => {
-    return addNotification({
+    const notification = {
       type: 'error',
+      title: options.title || 'Error',
       message,
-      persistent: true,
       ...options
-    });
+    };
+
+    const id = addNotification(notification);
+
+    toast.error(
+      <div className="flex items-start space-x-3">
+        <XCircleIcon className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+        <div className="flex-1 min-w-0">
+          {notification.title && (
+            <p className="text-sm font-medium text-gray-900 mb-1">
+              {notification.title}
+            </p>
+          )}
+          <p className="text-sm text-gray-600">{message}</p>
+        </div>
+      </div>,
+      {
+        ...toastConfig,
+        duration: options.duration || 6000, // Longer for errors
+        style: {
+          ...toastConfig.style,
+          background: '#fef2f2',
+          border: '1px solid #ef4444',
+          color: '#991b1b'
+        }
+      }
+    );
+
+    return id;
   }, [addNotification]);
 
+  // Warning notification
   const warning = useCallback((message, options = {}) => {
-    return addNotification({
+    const notification = {
       type: 'warning',
+      title: options.title || 'Warning',
       message,
       ...options
-    });
+    };
+
+    const id = addNotification(notification);
+
+    toast(
+      <div className="flex items-start space-x-3">
+        <ExclamationTriangleIcon className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+        <div className="flex-1 min-w-0">
+          {notification.title && (
+            <p className="text-sm font-medium text-gray-900 mb-1">
+              {notification.title}
+            </p>
+          )}
+          <p className="text-sm text-gray-600">{message}</p>
+        </div>
+      </div>,
+      {
+        ...toastConfig,
+        duration: options.duration || 5000,
+        style: {
+          ...toastConfig.style,
+          background: '#fffbeb',
+          border: '1px solid #f59e0b',
+          color: '#92400e'
+        }
+      }
+    );
+
+    return id;
   }, [addNotification]);
 
+  // Info notification
   const info = useCallback((message, options = {}) => {
-    return addNotification({
+    const notification = {
       type: 'info',
+      title: options.title || 'Information',
+      message,
+      ...options
+    };
+
+    const id = addNotification(notification);
+
+    toast(
+      <div className="flex items-start space-x-3">
+        <InformationCircleIcon className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+        <div className="flex-1 min-w-0">
+          {notification.title && (
+            <p className="text-sm font-medium text-gray-900 mb-1">
+              {notification.title}
+            </p>
+          )}
+          <p className="text-sm text-gray-600">{message}</p>
+        </div>
+      </div>,
+      {
+        ...toastConfig,
+        duration: options.duration || toastConfig.duration,
+        style: {
+          ...toastConfig.style,
+          background: '#eff6ff',
+          border: '1px solid #3b82f6',
+          color: '#1e40af'
+        }
+      }
+    );
+
+    return id;
+  }, [addNotification]);
+
+  // Loading notification (with promise support)
+  const loading = useCallback((message, promise, options = {}) => {
+    if (promise) {
+      return toast.promise(
+        promise,
+        {
+          loading: message,
+          success: (data) => options.successMessage || 'Operation completed successfully',
+          error: (err) => options.errorMessage || `Operation failed: ${err.message}`
+        },
+        {
+          ...toastConfig,
+          style: {
+            ...toastConfig.style,
+            background: '#f8fafc',
+            border: '1px solid #64748b'
+          }
+        }
+      );
+    }
+
+    const id = toast.loading(message, {
+      ...toastConfig,
+      style: {
+        ...toastConfig.style,
+        background: '#f8fafc',
+        border: '1px solid #64748b'
+      }
+    });
+
+    addNotification({
+      type: 'loading',
+      title: 'Loading',
       message,
       ...options
     });
+
+    return id;
   }, [addNotification]);
+
+  // Custom notification
+  const custom = useCallback((component, options = {}) => {
+    const id = toast.custom(component, {
+      ...toastConfig,
+      ...options
+    });
+
+    addNotification({
+      type: 'custom',
+      message: 'Custom notification',
+      ...options
+    });
+
+    return id;
+  }, [addNotification]);
+
+  // Dismiss notification
+  const dismiss = useCallback((toastId) => {
+    if (toastId) {
+      toast.dismiss(toastId);
+    } else {
+      toast.dismiss();
+    }
+  }, []);
+
+  // Notification for task status updates
+  const taskUpdate = useCallback((task, status) => {
+    const messages = {
+      created: `Task "${task.name}" has been created`,
+      running: `Task "${task.name}" is now running`,
+      completed: `Task "${task.name}" completed successfully`,
+      failed: `Task "${task.name}" failed to complete`,
+      cancelled: `Task "${task.name}" was cancelled`
+    };
+
+    const types = {
+      created: 'info',
+      running: 'info',
+      completed: 'success',
+      failed: 'error',
+      cancelled: 'warning'
+    };
+
+    const notificationType = types[status] || 'info';
+    const message = messages[status] || `Task "${task.name}" status: ${status}`;
+
+    return notificationType === 'success' ? success(message) :
+           notificationType === 'error' ? error(message) :
+           notificationType === 'warning' ? warning(message) :
+           info(message);
+  }, [success, error, warning, info]);
+
+  // System notification
+  const system = useCallback((message, level = 'info', options = {}) => {
+    const systemOptions = {
+      ...options,
+      title: options.title || 'System Notification',
+      duration: options.duration || (level === 'error' ? 8000 : 5000)
+    };
+
+    switch (level) {
+      case 'error':
+        return error(message, systemOptions);
+      case 'warning':
+        return warning(message, systemOptions);
+      case 'success':
+        return success(message, systemOptions);
+      default:
+        return info(message, systemOptions);
+    }
+  }, [success, error, warning, info]);
 
   const value = {
     notifications,
-    addNotification,
-    removeNotification,
-    clearAll,
     success,
     error,
     warning,
-    info
+    info,
+    loading,
+    custom,
+    dismiss,
+    taskUpdate,
+    system,
+    addNotification,
+    removeNotification,
+    clearAllNotifications
   };
 
   return (
     <NotificationContext.Provider value={value}>
       {children}
-      <NotificationContainer />
     </NotificationContext.Provider>
   );
 };
 
-const NotificationContainer = () => {
-  const { notifications, removeNotification } = useNotifications();
-
-  const getIcon = (type) => {
-    switch (type) {
-      case 'success':
-        return <CheckCircleIcon className="w-5 h-5 text-green-400" />;
-      case 'error':
-        return <XCircleIcon className="w-5 h-5 text-red-400" />;
-      case 'warning':
-        return <ExclamationCircleIcon className="w-5 h-5 text-yellow-400" />;
-      default:
-        return <InformationCircleIcon className="w-5 h-5 text-blue-400" />;
-    }
-  };
-
-  const getColorClasses = (type) => {
-    switch (type) {
-      case 'success':
-        return 'bg-green-50 border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-200';
-      case 'error':
-        return 'bg-red-50 border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-200';
-      case 'warning':
-        return 'bg-yellow-50 border-yellow-200 text-yellow-800 dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-200';
-      default:
-        return 'bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-200';
-    }
-  };
-
-  if (notifications.length === 0) return null;
-
-  return (
-    <div className="fixed top-4 right-4 z-50 space-y-2 max-w-md">
-      {notifications.map((notification) => (
-        <div
-          key={notification.id}
-          className={`flex items-start p-4 rounded-lg border shadow-lg transition-all duration-300 transform animate-slide-in ${getColorClasses(notification.type)}`}
-        >
-          <div className="flex-shrink-0">
-            {getIcon(notification.type)}
-          </div>
-          <div className="ml-3 flex-1">
-            {notification.title && (
-              <h4 className="text-sm font-medium mb-1">{notification.title}</h4>
-            )}
-            <p className="text-sm">{notification.message}</p>
-            {notification.actions && notification.actions.length > 0 && (
-              <div className="mt-3 flex space-x-2">
-                {notification.actions.map((action, index) => (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      action.handler();
-                      if (action.closeOnClick !== false) {
-                        removeNotification(notification.id);
-                      }
-                    }}
-                    className="text-sm font-medium underline hover:no-underline"
-                  >
-                    {action.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-          <button
-            onClick={() => removeNotification(notification.id)}
-            className="flex-shrink-0 ml-4 hover:opacity-70 transition-opacity"
-          >
-            <XMarkIcon className="w-4 h-4" />
-          </button>
-        </div>
-      ))}
-    </div>
-  );
-};
+export default NotificationContext;

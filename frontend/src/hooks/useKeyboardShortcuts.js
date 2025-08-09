@@ -1,105 +1,224 @@
 import { useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useNotification } from '../contexts/NotificationContext';
 
 export const useKeyboardShortcuts = () => {
   const navigate = useNavigate();
+  const { info } = useNotification();
 
-  const handleKeyPress = useCallback((event) => {
-    // Only handle shortcuts when not typing in inputs
+  // Keyboard shortcuts configuration
+  const shortcuts = {
+    // Navigation shortcuts
+    'g,d': () => navigate('/'),
+    'g,m': () => navigate('/models'),
+    'g,t': () => navigate('/tasks'),
+    'g,a': () => navigate('/agents'),
+    'g,s': () => navigate('/system'),
+    'g,c': () => navigate('/config'),
+    'g,y': () => navigate('/analytics'),
+    
+    // Action shortcuts
+    '?': () => showShortcutsHelp(),
+    'Escape': () => closeModals(),
+    'r': () => refreshPage(),
+    'n': () => createNewTask(),
+    'f': () => focusSearch(),
+    
+    // System shortcuts
+    'ctrl+k': () => openCommandPalette(),
+    'cmd+k': () => openCommandPalette(),
+    'ctrl+/': () => showShortcutsHelp(),
+    'cmd+/': () => showShortcutsHelp()
+  };
+
+  const showShortcutsHelp = useCallback(() => {
+    const helpText = `
+Keyboard Shortcuts:
+Navigation:
+  g + d: Dashboard
+  g + m: Models  
+  g + t: Tasks
+  g + a: Agents
+  g + s: System
+  g + c: Configuration
+  g + y: Analytics
+
+Actions:
+  n: New Task
+  r: Refresh
+  f: Focus Search
+  ?: Show this help
+  Esc: Close modals
+
+System:
+  Ctrl/Cmd + K: Command Palette
+  Ctrl/Cmd + /: Show shortcuts
+    `.trim();
+
+    info(helpText, { 
+      title: 'Keyboard Shortcuts', 
+      duration: 10000 
+    });
+  }, [info]);
+
+  const closeModals = useCallback(() => {
+    // Close any open modals by dispatching escape events
+    const modals = document.querySelectorAll('[role="dialog"], .modal, [data-modal]');
+    modals.forEach(modal => {
+      const closeButton = modal.querySelector('[data-close], .close, [aria-label*="close" i]');
+      if (closeButton) {
+        closeButton.click();
+      }
+    });
+
+    // Clear focus from inputs
+    const activeElement = document.activeElement;
+    if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
+      activeElement.blur();
+    }
+  }, []);
+
+  const refreshPage = useCallback(() => {
+    window.location.reload();
+  }, []);
+
+  const createNewTask = useCallback(() => {
+    // Try to find and click the "New Task" button
+    const newTaskButton = document.querySelector('[data-action="new-task"], button[title*="New Task" i], button:contains("New Task")');
+    if (newTaskButton) {
+      newTaskButton.click();
+    } else {
+      navigate('/tasks');
+      info('Navigate to Tasks page to create a new task', { title: 'New Task' });
+    }
+  }, [navigate, info]);
+
+  const focusSearch = useCallback(() => {
+    // Find and focus the search input
+    const searchInput = document.querySelector('input[placeholder*="search" i], input[type="search"], [data-search]');
+    if (searchInput) {
+      searchInput.focus();
+      searchInput.select();
+    } else {
+      info('Search not available on current page', { title: 'Focus Search' });
+    }
+  }, [info]);
+
+  const openCommandPalette = useCallback(() => {
+    // Placeholder for command palette functionality
+    info('Command palette coming soon!', { title: 'Command Palette' });
+  }, [info]);
+
+  // Key sequence tracking for multi-key shortcuts
+  const [keySequence, setKeySequence] = React.useState([]);
+  const [sequenceTimer, setSequenceTimer] = React.useState(null);
+
+  const handleKeyDown = useCallback((event) => {
+    // Ignore if user is typing in an input field
     if (event.target.tagName === 'INPUT' || 
         event.target.tagName === 'TEXTAREA' || 
         event.target.contentEditable === 'true') {
       return;
     }
 
-    // Check for modifier keys (Ctrl/Cmd + key)
-    const isModifierPressed = event.ctrlKey || event.metaKey;
-
-    if (isModifierPressed) {
-      switch (event.key.toLowerCase()) {
-        case 'h':
-          event.preventDefault();
-          navigate('/');
-          break;
-        case 'm':
-          event.preventDefault();
-          navigate('/models');
-          break;
-        case 't':
-          event.preventDefault();
-          navigate('/tasks');
-          break;
-        case 'a':
-          event.preventDefault();
-          navigate('/agents');
-          break;
-        case 'n':
-          event.preventDefault();
-          navigate('/analytics');
-          break;
-        case 's':
-          event.preventDefault();
-          navigate('/system');
-          break;
-        case ',':
-          event.preventDefault();
-          navigate('/config');
-          break;
-        case 'k':
-          event.preventDefault();
-          // Open command palette (implement later)
-          console.log('Command palette shortcut');
-          break;
-        case '/':
-          event.preventDefault();
-          // Focus search (implement later)
-          console.log('Search shortcut');
-          break;
-        default:
-          break;
+    const key = event.key.toLowerCase();
+    const hasModifier = event.ctrlKey || event.metaKey || event.altKey;
+    
+    // Handle modifier combinations first
+    if (hasModifier) {
+      const modifierKey = event.ctrlKey ? 'ctrl' : event.metaKey ? 'cmd' : 'alt';
+      const combination = `${modifierKey}+${key}`;
+      
+      if (shortcuts[combination]) {
+        event.preventDefault();
+        shortcuts[combination]();
+        return;
       }
     }
 
-    // Handle non-modifier shortcuts
-    if (!isModifierPressed) {
-      switch (event.key) {
-        case '?':
-          event.preventDefault();
-          // Show keyboard shortcuts help
-          console.log('Show shortcuts help');
-          break;
-        case 'Escape':
-          // Close modals, clear selections, etc.
-          document.dispatchEvent(new CustomEvent('closeModals'));
-          break;
-        default:
-          break;
+    // Handle single keys and sequences
+    if (!hasModifier) {
+      // Clear previous sequence timer
+      if (sequenceTimer) {
+        clearTimeout(sequenceTimer);
       }
+
+      // Add key to sequence
+      const newSequence = [...keySequence, key];
+      const sequenceString = newSequence.join(',');
+
+      // Check for exact matches
+      if (shortcuts[sequenceString]) {
+        event.preventDefault();
+        shortcuts[sequenceString]();
+        setKeySequence([]);
+        return;
+      }
+
+      // Check for single key shortcuts
+      if (shortcuts[key] && keySequence.length === 0) {
+        event.preventDefault();
+        shortcuts[key]();
+        return;
+      }
+
+      // Update sequence and set timer
+      setKeySequence(newSequence);
+      setSequenceTimer(setTimeout(() => {
+        setKeySequence([]);
+      }, 2000)); // Clear sequence after 2 seconds
     }
-  }, [navigate]);
+  }, [keySequence, sequenceTimer, shortcuts]);
 
   useEffect(() => {
-    if (process.env.REACT_APP_ENABLE_KEYBOARD_SHORTCUTS === 'true') {
-      document.addEventListener('keydown', handleKeyPress);
-      return () => {
-        document.removeEventListener('keydown', handleKeyPress);
-      };
-    }
-  }, [handleKeyPress]);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      if (sequenceTimer) {
+        clearTimeout(sequenceTimer);
+      }
+    };
+  }, [handleKeyDown, sequenceTimer]);
 
+  // Return current key sequence for UI display
   return {
-    shortcuts: {
-      'Ctrl/Cmd + H': 'Go to Dashboard',
-      'Ctrl/Cmd + M': 'Go to Models',
-      'Ctrl/Cmd + T': 'Go to Tasks',
-      'Ctrl/Cmd + A': 'Go to Agents',
-      'Ctrl/Cmd + N': 'Go to Analytics',
-      'Ctrl/Cmd + S': 'Go to System',
-      'Ctrl/Cmd + ,': 'Go to Configuration',
-      'Ctrl/Cmd + K': 'Open Command Palette',
-      'Ctrl/Cmd + /': 'Focus Search',
-      '?': 'Show Keyboard Shortcuts',
-      'Escape': 'Close Modals'
-    }
+    keySequence: keySequence.join(' + '),
+    showShortcutsHelp,
+    shortcuts: Object.keys(shortcuts)
   };
 };
+
+// Hook for component-specific shortcuts
+export const useComponentShortcuts = (componentShortcuts) => {
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      // Ignore if user is typing in an input field
+      if (event.target.tagName === 'INPUT' || 
+          event.target.tagName === 'TEXTAREA' || 
+          event.target.contentEditable === 'true') {
+        return;
+      }
+
+      const key = event.key.toLowerCase();
+      const hasModifier = event.ctrlKey || event.metaKey || event.altKey;
+      
+      if (hasModifier) {
+        const modifierKey = event.ctrlKey ? 'ctrl' : event.metaKey ? 'cmd' : 'alt';
+        const combination = `${modifierKey}+${key}`;
+        
+        if (componentShortcuts[combination]) {
+          event.preventDefault();
+          componentShortcuts[combination]();
+        }
+      } else if (componentShortcuts[key]) {
+        event.preventDefault();
+        componentShortcuts[key]();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [componentShortcuts]);
+};
+
+export default useKeyboardShortcuts;
