@@ -108,7 +108,7 @@ export const WebSocketProvider = ({ children }) => {
         if (data.updates.status === 'completed') {
           const task = tasks.find(t => t.id.id === data.taskId);
           if (task) {
-            toast.success(`Task "${task.name}" completed`);
+            toast.success(`Task "${task.name}" completed successfully`);
           }
         } else if (data.updates.status === 'failed') {
           const task = tasks.find(t => t.id.id === data.taskId);
@@ -118,10 +118,56 @@ export const WebSocketProvider = ({ children }) => {
         }
         break;
 
+      case 'task_progress':
+        console.log('📊 Task progress:', data.taskId, `${data.progress}%`);
+        setTasks(prev => prev.map(task => 
+          task.id.id === data.taskId 
+            ? { ...task, progress: data.progress }
+            : task
+        ));
+        break;
+
+      case 'task_completed':
+        console.log('✅ Task completed:', data.taskId);
+        setTasks(prev => prev.map(task => 
+          task.id.id === data.taskId 
+            ? { ...task, ...data.task, status: 'completed' }
+            : task
+        ));
+        toast.success(
+          `Task completed! ${data.result.summary}`,
+          { 
+            duration: 5000,
+            icon: '🎉'
+          }
+        );
+        break;
+
+      case 'task_failed':
+        console.log('❌ Task failed:', data.taskId, data.error);
+        setTasks(prev => prev.map(task => 
+          task.id.id === data.taskId 
+            ? { ...task, status: 'failed', error: data.error }
+            : task
+        ));
+        toast.error(
+          `Task failed: ${data.error.message}`,
+          { 
+            duration: 6000,
+            icon: '💥'
+          }
+        );
+        break;
+
       case 'task_deleted':
         console.log('🗑️ Task deleted:', data.taskId);
         setTasks(prev => prev.filter(task => task.id.id !== data.taskId));
         toast.info('Task deleted');
+        break;
+
+      case 'task_archived':
+        console.log('🗃️ Task archived:', data.taskId);
+        setTasks(prev => prev.filter(task => task.id.id !== data.taskId));
         break;
 
       case 'task_cleaned_up':
@@ -133,8 +179,13 @@ export const WebSocketProvider = ({ children }) => {
         setMetrics(data);
         break;
 
+      case 'health_updated':
+        console.log('🏥 Health status updated:', data);
+        // Could trigger UI updates for health indicators
+        break;
+
       case 'config_updated':
-        toast.success('Configuration updated');
+        toast.success('Configuration updated successfully');
         break;
 
       case 'keys_updated':
