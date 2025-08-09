@@ -393,3 +393,85 @@ const AgentsPage = () => {
 };
 
 export default AgentsPage;
+import React, { useState, useEffect } from 'react';
+import { getAgents } from '../services/api';
+
+const AgentsPage = () => {
+  const [agents, setAgents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchAgents = async () => {
+      try {
+        setLoading(true);
+        const data = await getAgents();
+        setAgents(data.agents || []);
+      } catch (err) {
+        setError('Failed to load agents');
+        console.error('Agents error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAgents();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Agents</h1>
+        <p className="mt-2 text-gray-600 dark:text-gray-400">
+          Manage AI agents and their configurations
+        </p>
+      </div>
+
+      {error && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+          <p className="text-red-600 dark:text-red-300">{error}</p>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {agents.length > 0 ? agents.map((agent, index) => (
+          <div key={index} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                {agent.name || `Agent ${index + 1}`}
+              </h3>
+              <span className={`w-3 h-3 rounded-full ${
+                agent.status === 'active' ? 'bg-green-500' : 'bg-gray-400'
+              }`}></span>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+              {agent.type || 'General Agent'}
+            </p>
+            <div className="mt-4">
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                Tasks: {agent.tasksCompleted || 0}
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                Uptime: {agent.uptime || '0h'}
+              </div>
+            </div>
+          </div>
+        )) : (
+          <div className="col-span-3 text-center py-12">
+            <p className="text-gray-600 dark:text-gray-400">No agents configured</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default AgentsPage;

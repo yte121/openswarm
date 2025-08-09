@@ -368,3 +368,163 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+import React, { useState, useEffect } from 'react';
+import { healthCheck, getSystemStatus } from '../services/api';
+
+const Dashboard = () => {
+  const [systemStatus, setSystemStatus] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const [health, status] = await Promise.all([
+          healthCheck(),
+          getSystemStatus().catch(() => ({ status: 'unknown' }))
+        ]);
+        setSystemStatus({ ...health, ...status });
+        setError(null);
+      } catch (err) {
+        setError('Failed to load dashboard data');
+        console.error('Dashboard error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+    const interval = setInterval(fetchDashboardData, 30000); // Refresh every 30 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+        <h3 className="text-red-800 dark:text-red-400 font-medium">Error</h3>
+        <p className="text-red-600 dark:text-red-300 mt-1">{error}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+        <p className="mt-2 text-gray-600 dark:text-gray-400">
+          Overview of your Claude-Flow system
+        </p>
+      </div>
+
+      {/* Status Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
+              <div className="w-6 h-6 text-green-600 dark:text-green-400">✓</div>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">System Status</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+                {systemStatus?.status === 'healthy' ? 'Healthy' : 'Issues'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+              <div className="w-6 h-6 text-blue-600 dark:text-blue-400">🤖</div>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Agents</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+                {systemStatus?.activeAgents || 0}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="p-2 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg">
+              <div className="w-6 h-6 text-yellow-600 dark:text-yellow-400">📋</div>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Running Tasks</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+                {systemStatus?.runningTasks || 0}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
+              <div className="w-6 h-6 text-purple-600 dark:text-purple-400">⚡</div>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Uptime</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+                {systemStatus?.uptime || '0h'}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <button className="p-4 text-left border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            <div className="text-lg font-medium text-gray-900 dark:text-white">Start New Task</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Create and execute a new task</div>
+          </button>
+          
+          <button className="p-4 text-left border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            <div className="text-lg font-medium text-gray-900 dark:text-white">Manage Agents</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Configure and monitor agents</div>
+          </button>
+          
+          <button className="p-4 text-left border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            <div className="text-lg font-medium text-gray-900 dark:text-white">View Analytics</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Check system performance</div>
+          </button>
+        </div>
+      </div>
+
+      {/* Recent Activity */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Recent Activity</h2>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-600">
+            <div>
+              <p className="font-medium text-gray-900 dark:text-white">System initialized</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Claude-Flow backend started successfully</p>
+            </div>
+            <span className="text-sm text-gray-500 dark:text-gray-400">Just now</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;

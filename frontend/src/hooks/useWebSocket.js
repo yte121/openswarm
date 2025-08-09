@@ -267,3 +267,115 @@ export const WebSocketProvider = ({ children }) => {
     </WebSocketContext.Provider>
   );
 };
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
+
+const WebSocketContext = createContext();
+
+export const useWebSocket = () => {
+  const context = useContext(WebSocketContext);
+  if (!context) {
+    throw new Error('useWebSocket must be used within a WebSocketProvider');
+  }
+  return context;
+};
+
+export const WebSocketProvider = ({ children }) => {
+  const [socket, setSocket] = useState(null);
+  const [connectionStatus, setConnectionStatus] = useState('Disconnected');
+  const [lastMessage, setLastMessage] = useState(null);
+  const reconnectTimeoutRef = useRef(null);
+  const reconnectAttempts = useRef(0);
+  const maxReconnectAttempts = 5;
+
+  const wsUrl = process.env.NODE_ENV === 'production' 
+    ? 'ws://0.0.0.0:8001/ws' 
+    : 'ws://localhost:8001/ws';
+
+  const connect = () => {
+    try {
+      const ws = new WebSocket(wsUrl);
+
+      ws.onopen = () => {
+        console.log('WebSocket connected');
+        setConnectionStatus('Connected');
+        setSocket(ws);
+        reconnectAttempts.current = 0;
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const message = JSON.parse(event.data);
+          setLastMessage(message);
+        } catch (error) {
+          console.error('Error parsing WebSocket message:', error);
+        }
+      };
+
+      ws.onclose = () => {
+        console.log('WebSocket disconnected');
+        setConnectionStatus('Disconnected');
+        setSocket(null);
+        
+        // Attempt to reconnect
+        if (reconnectAttempts.current < maxReconnectAttempts) {
+          reconnectAttempts.current++;
+          const timeout = Math.pow(2, reconnectAttempts.current) * 1000; // Exponential backoff
+          
+          reconnectTimeoutRef.current = setTimeout(() => {
+            console.log(`Reconnecting... Attempt ${reconnectAttempts.current}`);
+            connect();
+          }, timeout);
+        }
+      };
+
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        setConnectionStatus('Error');
+      };
+
+    } catch (error) {
+      console.error('Error creating WebSocket connection:', error);
+      setConnectionStatus('Error');
+    }
+  };
+
+  const disconnect = () => {
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+    }
+    if (socket) {
+      socket.close();
+    }
+  };
+
+  const sendMessage = (message) => {
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify(message));
+    } else {
+      console.warn('WebSocket is not connected');
+    }
+  };
+
+  useEffect(() => {
+    connect();
+
+    return () => {
+      disconnect();
+    };
+  }, []);
+
+  const value = {
+    socket,
+    connectionStatus,
+    lastMessage,
+    sendMessage,
+    connect,
+    disconnect
+  };
+
+  return (
+    <WebSocketContext.Provider value={value}>
+      {children}
+    </WebSocketContext.Provider>
+  );
+};

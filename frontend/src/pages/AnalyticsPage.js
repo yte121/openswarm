@@ -454,3 +454,57 @@ const AnalyticsPage = () => {
 };
 
 export default AnalyticsPage;
+import React from 'react';
+
+const AnalyticsPage = () => {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Analytics</h1>
+        <p className="mt-2 text-gray-600 dark:text-gray-400">
+          System performance metrics and insights
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Performance Overview</h2>
+          <div className="space-y-4">
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">CPU Usage</span>
+              <span className="text-gray-900 dark:text-white">12%</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Memory Usage</span>
+              <span className="text-gray-900 dark:text-white">4.2 GB</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Active Connections</span>
+              <span className="text-gray-900 dark:text-white">1</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Task Statistics</h2>
+          <div className="space-y-4">
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Total Tasks</span>
+              <span className="text-gray-900 dark:text-white">0</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Completed</span>
+              <span className="text-green-600 dark:text-green-400">0</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Failed</span>
+              <span className="text-red-600 dark:text-red-400">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AnalyticsPage;

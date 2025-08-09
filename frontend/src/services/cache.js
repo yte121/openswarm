@@ -284,3 +284,56 @@ export const cacheMiddleware = {
 
 export { cacheService };
 export default cacheService;
+class CacheService {
+  constructor(defaultTTL = 5 * 60 * 1000) { // 5 minutes default
+    this.cache = new Map();
+    this.defaultTTL = defaultTTL;
+  }
+
+  set(key, value, ttl = this.defaultTTL) {
+    const expireTime = Date.now() + ttl;
+    this.cache.set(key, {
+      value,
+      expireTime
+    });
+  }
+
+  get(key) {
+    const item = this.cache.get(key);
+    
+    if (!item) {
+      return null;
+    }
+
+    if (Date.now() > item.expireTime) {
+      this.cache.delete(key);
+      return null;
+    }
+
+    return item.value;
+  }
+
+  has(key) {
+    return this.get(key) !== null;
+  }
+
+  delete(key) {
+    return this.cache.delete(key);
+  }
+
+  clear() {
+    this.cache.clear();
+  }
+
+  // Clean up expired entries
+  cleanup() {
+    const now = Date.now();
+    for (const [key, item] of this.cache.entries()) {
+      if (now > item.expireTime) {
+        this.cache.delete(key);
+      }
+    }
+  }
+}
+
+export default new CacheService();

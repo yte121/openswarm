@@ -223,3 +223,74 @@ const Sidebar = ({ appVersion, isHealthy, collapsed, onToggle }) => {
 };
 
 export default Sidebar;
+import React from 'react';
+import { NavLink } from 'react-router-dom';
+
+const Sidebar = ({ appVersion, isHealthy, collapsed, onToggle }) => {
+  const navigation = [
+    { name: 'Dashboard', href: '/', icon: '📊' },
+    { name: 'Models', href: '/models', icon: '🤖' },
+    { name: 'Tasks', href: '/tasks', icon: '📋' },
+    { name: 'Agents', href: '/agents', icon: '👥' },
+    { name: 'Analytics', href: '/analytics', icon: '📈' },
+    { name: 'System', href: '/system', icon: '⚙️' },
+    { name: 'Config', href: '/config', icon: '🔧' },
+  ];
+
+  return (
+    <div className={`bg-gray-900 text-white transition-all duration-300 ${collapsed ? 'w-16' : 'w-64'} flex flex-col fixed left-0 top-0 h-full z-20`}>
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b border-gray-700">
+        {!collapsed && (
+          <div>
+            <h1 className="text-xl font-bold">Claude-Flow</h1>
+            <p className="text-xs text-gray-400">{appVersion}</p>
+          </div>
+        )}
+        <button
+          onClick={onToggle}
+          className="p-2 rounded-lg hover:bg-gray-700 transition-colors"
+        >
+          {collapsed ? '→' : '←'}
+        </button>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 p-4">
+        <ul className="space-y-2">
+          {navigation.map((item) => (
+            <li key={item.name}>
+              <NavLink
+                to={item.href}
+                className={({ isActive }) =>
+                  `flex items-center px-3 py-2 rounded-lg transition-colors ${
+                    isActive
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                  }`
+                }
+              >
+                <span className="text-xl mr-3">{item.icon}</span>
+                {!collapsed && <span>{item.name}</span>}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      {/* Status */}
+      <div className="p-4 border-t border-gray-700">
+        <div className={`flex items-center ${collapsed ? 'justify-center' : ''}`}>
+          <div className={`w-3 h-3 rounded-full ${isHealthy ? 'bg-green-500' : 'bg-red-500'} mr-2`}></div>
+          {!collapsed && (
+            <span className="text-sm text-gray-400">
+              {isHealthy ? 'Connected' : 'Disconnected'}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Sidebar;

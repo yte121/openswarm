@@ -96,3 +96,85 @@ export const formatApiResponse = (response, key = 'data') => {
 
 // Export the axios instance for direct use if needed
 export default api;
+import axios from 'axios';
+
+const API_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? 'http://0.0.0.0:8001/api' 
+  : '/api';
+
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Request interceptor
+api.interceptors.request.use(
+  (config) => {
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor
+api.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    console.error('API Error:', error);
+    return Promise.reject(error);
+  }
+);
+
+// API methods
+export const healthCheck = async () => {
+  try {
+    const response = await api.get('/health');
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getModels = async () => {
+  try {
+    const response = await api.get('/models');
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getTasks = async () => {
+  try {
+    const response = await api.get('/tasks');
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getAgents = async () => {
+  try {
+    const response = await api.get('/agents');
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getSystemStatus = async () => {
+  try {
+    const response = await api.get('/system/status');
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export default api;

@@ -340,3 +340,90 @@ export const NotificationProvider = ({ children }) => {
 };
 
 export default NotificationContext;
+import React, { createContext, useContext, useState } from 'react';
+import toast from 'react-hot-toast';
+
+const NotificationContext = createContext();
+
+export const useNotification = () => {
+  const context = useContext(NotificationContext);
+  if (!context) {
+    throw new Error('useNotification must be used within a NotificationProvider');
+  }
+  return context;
+};
+
+export const NotificationProvider = ({ children }) => {
+  const [notifications, setNotifications] = useState([]);
+
+  const addNotification = (notification) => {
+    const id = Date.now().toString();
+    const newNotification = { id, ...notification };
+    
+    setNotifications(prev => [...prev, newNotification]);
+    
+    // Show toast
+    switch (notification.type) {
+      case 'success':
+        toast.success(notification.message);
+        break;
+      case 'error':
+        toast.error(notification.message);
+        break;
+      case 'warning':
+        toast(notification.message, { icon: '⚠️' });
+        break;
+      default:
+        toast(notification.message);
+    }
+
+    // Auto remove after duration
+    setTimeout(() => {
+      removeNotification(id);
+    }, notification.duration || 5000);
+
+    return id;
+  };
+
+  const removeNotification = (id) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  };
+
+  const clearAll = () => {
+    setNotifications([]);
+    toast.dismiss();
+  };
+
+  const success = (message, options = {}) => {
+    return addNotification({ type: 'success', message, ...options });
+  };
+
+  const error = (message, options = {}) => {
+    return addNotification({ type: 'error', message, ...options });
+  };
+
+  const warning = (message, options = {}) => {
+    return addNotification({ type: 'warning', message, ...options });
+  };
+
+  const info = (message, options = {}) => {
+    return addNotification({ type: 'info', message, ...options });
+  };
+
+  const value = {
+    notifications,
+    addNotification,
+    removeNotification,
+    clearAll,
+    success,
+    error,
+    warning,
+    info
+  };
+
+  return (
+    <NotificationContext.Provider value={value}>
+      {children}
+    </NotificationContext.Provider>
+  );
+};

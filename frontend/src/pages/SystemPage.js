@@ -357,3 +357,60 @@ const SystemPage = () => {
 };
 
 export default SystemPage;
+import React from 'react';
+
+const SystemPage = () => {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">System</h1>
+        <p className="mt-2 text-gray-600 dark:text-gray-400">
+          System configuration and monitoring
+        </p>
+      </div>
+
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">System Information</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h3 className="font-medium text-gray-900 dark:text-white mb-2">Backend</h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-600 dark:text-gray-400">Status</span>
+                <span className="text-green-600 dark:text-green-400">Running</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600 dark:text-gray-400">Port</span>
+                <span className="text-gray-900 dark:text-white">8001</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600 dark:text-gray-400">Version</span>
+                <span className="text-gray-900 dark:text-white">2.0.0-alpha.84</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 className="font-medium text-gray-900 dark:text-white mb-2">Frontend</h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-600 dark:text-gray-400">Status</span>
+                <span className="text-green-600 dark:text-green-400">Running</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600 dark:text-gray-400">Port</span>
+                <span className="text-gray-900 dark:text-white">3000</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600 dark:text-gray-400">Version</span>
+                <span className="text-gray-900 dark:text-white">2.0.0-alpha.84</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SystemPage;

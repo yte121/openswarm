@@ -401,3 +401,77 @@ const ModelsPage = () => {
 };
 
 export default ModelsPage;
+import React, { useState, useEffect } from 'react';
+import { getModels } from '../services/api';
+
+const ModelsPage = () => {
+  const [models, setModels] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchModels = async () => {
+      try {
+        setLoading(true);
+        const data = await getModels();
+        setModels(data.models || []);
+      } catch (err) {
+        setError('Failed to load models');
+        console.error('Models error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchModels();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Models</h1>
+        <p className="mt-2 text-gray-600 dark:text-gray-400">
+          Manage and configure AI models
+        </p>
+      </div>
+
+      {error && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+          <p className="text-red-600 dark:text-red-300">{error}</p>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {models.length > 0 ? models.map((model, index) => (
+          <div key={index} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{model.name}</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{model.provider}</p>
+            <div className="mt-4">
+              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                model.status === 'active' 
+                  ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                  : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+              }`}>
+                {model.status || 'available'}
+              </span>
+            </div>
+          </div>
+        )) : (
+          <div className="col-span-3 text-center py-12">
+            <p className="text-gray-600 dark:text-gray-400">No models configured</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default ModelsPage;

@@ -423,3 +423,97 @@ const ConfigPage = () => {
 };
 
 export default ConfigPage;
+import React, { useState } from 'react';
+import { useTheme } from '../contexts/ThemeContext';
+
+const ConfigPage = () => {
+  const { isDark, toggleTheme } = useTheme();
+  const [config, setConfig] = useState({
+    autoSave: true,
+    notifications: true,
+    darkMode: isDark
+  });
+
+  const handleConfigChange = (key, value) => {
+    setConfig(prev => ({ ...prev, [key]: value }));
+    if (key === 'darkMode') {
+      toggleTheme();
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Configuration</h1>
+        <p className="mt-2 text-gray-600 dark:text-gray-400">
+          Manage system settings and preferences
+        </p>
+      </div>
+
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">General Settings</h2>
+        
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="text-sm font-medium text-gray-900 dark:text-white">Dark Mode</label>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Enable dark theme</p>
+            </div>
+            <button
+              onClick={() => handleConfigChange('darkMode', !config.darkMode)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                config.darkMode ? 'bg-blue-600' : 'bg-gray-200'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  config.darkMode ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="text-sm font-medium text-gray-900 dark:text-white">Auto Save</label>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Automatically save changes</p>
+            </div>
+            <button
+              onClick={() => handleConfigChange('autoSave', !config.autoSave)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                config.autoSave ? 'bg-blue-600' : 'bg-gray-200'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  config.autoSave ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="text-sm font-medium text-gray-900 dark:text-white">Notifications</label>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Show system notifications</p>
+            </div>
+            <button
+              onClick={() => handleConfigChange('notifications', !config.notifications)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                config.notifications ? 'bg-blue-600' : 'bg-gray-200'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  config.notifications ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ConfigPage;

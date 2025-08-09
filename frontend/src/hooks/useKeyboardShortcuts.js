@@ -222,3 +222,73 @@ export const useComponentShortcuts = (componentShortcuts) => {
 };
 
 export default useKeyboardShortcuts;
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+export const useKeyboardShortcuts = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleKeyPress = (event) => {
+      // Only handle shortcuts when not typing in inputs
+      if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+        return;
+      }
+
+      // Ctrl/Cmd + key combinations
+      if (event.ctrlKey || event.metaKey) {
+        switch (event.key) {
+          case '1':
+            event.preventDefault();
+            navigate('/');
+            break;
+          case '2':
+            event.preventDefault();
+            navigate('/models');
+            break;
+          case '3':
+            event.preventDefault();
+            navigate('/tasks');
+            break;
+          case '4':
+            event.preventDefault();
+            navigate('/agents');
+            break;
+          case '5':
+            event.preventDefault();
+            navigate('/analytics');
+            break;
+          case '6':
+            event.preventDefault();
+            navigate('/system');
+            break;
+          case '7':
+            event.preventDefault();
+            navigate('/config');
+            break;
+          default:
+            break;
+        }
+      }
+
+      // Single key shortcuts
+      switch (event.key) {
+        case 'Escape':
+          // Close any open modals or panels
+          break;
+        case '?':
+          // Show help modal
+          event.preventDefault();
+          break;
+        default:
+          break;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyPress);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [navigate]);
+};
