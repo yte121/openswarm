@@ -54,7 +54,7 @@ const Sidebar = ({ appVersion, isHealthy }) => {
           </div>
           <div>
             <h1 className="text-lg font-semibold text-gray-900">Claude-Flow</h1>
-            <p className="text-xs text-gray-500">v2.0.0-alpha.84</p>
+            <p className="text-xs text-gray-500">v{appVersion || '2.0.0-alpha.84'}</p>
           </div>
         </div>
       </div>
