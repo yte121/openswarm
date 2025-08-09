@@ -6,11 +6,13 @@ import {
   ClipboardDocumentListIcon, 
   UserGroupIcon, 
   CogIcon,
-  ChartBarIcon
+  ChartBarIcon,
+  ServerIcon,
+  PresentationChartLineIcon
 } from '@heroicons/react/24/outline';
 import { useWebSocket } from '../hooks/useWebSocket';
 
-const Sidebar = () => {
+const Sidebar = ({ appVersion, isHealthy }) => {
   const location = useLocation();
   const { connectionStatus, metrics } = useWebSocket();
 
@@ -19,6 +21,8 @@ const Sidebar = () => {
     { name: 'Models', href: '/models', icon: CpuChipIcon },
     { name: 'Tasks', href: '/tasks', icon: ClipboardDocumentListIcon },
     { name: 'Agents', href: '/agents', icon: UserGroupIcon },
+    { name: 'Analytics', href: '/analytics', icon: PresentationChartLineIcon },
+    { name: 'System', href: '/system', icon: ServerIcon },
     { name: 'Configuration', href: '/config', icon: CogIcon },
   ];
 
