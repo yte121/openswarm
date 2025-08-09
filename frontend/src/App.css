@@ -1,0 +1,232 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles for the Claude-Flow Dashboard */
+
+.dashboard-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.card-hover {
+  transition: all 0.3s ease;
+  transform: translateY(0);
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.animate-pulse-slow {
+  animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e0 #f7fafc;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: #f7fafc;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 2px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
+/* Status indicators */
+.status-active {
+  @apply bg-green-100 text-green-800 border-green-200;
+}
+
+.status-idle {
+  @apply bg-gray-100 text-gray-800 border-gray-200;
+}
+
+.status-running {
+  @apply bg-blue-100 text-blue-800 border-blue-200;
+}
+
+.status-completed {
+  @apply bg-green-100 text-green-800 border-green-200;
+}
+
+.status-failed {
+  @apply bg-red-100 text-red-800 border-red-200;
+}
+
+.status-error {
+  @apply bg-red-100 text-red-800 border-red-200;
+}
+
+/* Task priority indicators */
+.priority-critical {
+  @apply bg-red-500;
+}
+
+.priority-high {
+  @apply bg-orange-500;
+}
+
+.priority-normal {
+  @apply bg-blue-500;
+}
+
+.priority-low {
+  @apply bg-gray-500;
+}
+
+.priority-background {
+  @apply bg-gray-300;
+}
+
+/* Model type indicators */
+.model-chat {
+  @apply bg-blue-100 text-blue-800;
+}
+
+.model-completion {
+  @apply bg-purple-100 text-purple-800;
+}
+
+.model-embedding {
+  @apply bg-green-100 text-green-800;
+}
+
+.model-vision {
+  @apply bg-yellow-100 text-yellow-800;
+}
+
+/* Loading animations */
+.loading-dots {
+  display: inline-block;
+}
+
+.loading-dots::after {
+  content: '';
+  animation: loading-dots 1.5s infinite;
+}
+
+@keyframes loading-dots {
+  0%, 20% {
+    content: '';
+  }
+  40% {
+    content: '.';
+  }
+  60% {
+    content: '..';
+  }
+  80%, 100% {
+    content: '...';
+  }
+}
+
+/* Connection status */
+.connection-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.connection-connected {
+  background-color: #10b981;
+  animation: pulse-green 2s infinite;
+}
+
+.connection-disconnected {
+  background-color: #ef4444;
+}
+
+.connection-reconnecting {
+  background-color: #f59e0b;
+  animation: pulse-yellow 1s infinite;
+}
+
+@keyframes pulse-green {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes pulse-yellow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* Custom scrollbars for webkit browsers */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Task execution progress bar */
+.progress-bar {
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #f59e0b);
+  background-size: 400% 100%;
+  animation: progress-gradient 3s ease infinite;
+}
+
+@keyframes progress-gradient {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Responsive design utilities */
+@media (max-width: 640px) {
+  .mobile-hide {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .tablet-hide {
+    display: none;
+  }
+}
+
+/* Dark mode utilities (for future use) */
+@media (prefers-color-scheme: dark) {
+  .dark-mode {
+    --tw-bg-opacity: 1;
+    background-color: rgb(17 24 39 / var(--tw-bg-opacity));
+    color: white;
+  }
+}
