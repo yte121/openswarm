@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { 
   HomeIcon, 
@@ -8,13 +8,23 @@ import {
   CogIcon,
   ChartBarIcon,
   ServerIcon,
-  PresentationChartLineIcon
+  PresentationChartLineIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  SunIcon,
+  MoonIcon,
+  Bars3Icon,
+  MagnifyingGlassIcon
 } from '@heroicons/react/24/outline';
 import { useWebSocket } from '../hooks/useWebSocket';
+import { useTheme } from '../contexts/ThemeContext';
+import SearchBar from './SearchBar';
 
-const Sidebar = ({ appVersion, isHealthy }) => {
+const Sidebar = ({ appVersion, isHealthy, collapsed, onToggle }) => {
   const location = useLocation();
   const { connectionStatus, metrics } = useWebSocket();
+  const { theme, toggleTheme, compactMode, toggleCompactMode } = useTheme();
+  const [showSearch, setShowSearch] = useState(false);
 
   const navigation = [
     { name: 'Dashboard', href: '/', icon: HomeIcon },
