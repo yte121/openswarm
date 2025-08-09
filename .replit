@@ -1,0 +1,29 @@
+modules = ["nodejs-20", "python-3.12", "bash", "web"]
+
+[nix]
+channel = "stable-25_05"
+
+[workflows]
+runButton = "Full Stack"
+
+[[workflows.workflow]]
+name = "Full Stack"
+author = 41640033
+mode = "parallel"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd backend && npm install && npm start"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd frontend && npm install && npm start"
+
+[[workflows.workflow]]
+name = "Backend Only"
+author = 41640033
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd backend && npm install && npm start"
