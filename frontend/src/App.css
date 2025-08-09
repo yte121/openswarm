@@ -2,10 +2,79 @@
 @tailwind components;
 @tailwind utilities;
 
+/* CSS Variables for theming */
+:root {
+  --primary-color: #3b82f6;
+  --primary-dark: #1d4ed8;
+  --secondary-color: #64748b;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --error-color: #ef4444;
+  --info-color: #3b82f6;
+  
+  /* Toast variables */
+  --toast-bg: #363636;
+  --toast-color: #fff;
+  --toast-success-bg: #10b981;
+  --toast-error-bg: #ef4444;
+  --toast-loading-bg: #3b82f6;
+  --toast-success-icon: #fff;
+  --toast-error-icon: #fff;
+}
+
+/* Dark theme variables */
+.dark {
+  --toast-bg: #1f2937;
+  --toast-color: #f9fafb;
+}
+
+/* Animation speeds */
+.slow * {
+  transition-duration: 0.5s !important;
+  animation-duration: 0.5s !important;
+}
+
+.normal * {
+  transition-duration: 0.3s;
+  animation-duration: 0.3s;
+}
+
+.fast * {
+  transition-duration: 0.15s !important;
+  animation-duration: 0.15s !important;
+}
+
+/* Compact mode */
+.compact {
+  --spacing-scale: 0.75;
+}
+
+.compact .p-6 {
+  padding: calc(1.5rem * var(--spacing-scale, 1));
+}
+
+.compact .p-4 {
+  padding: calc(1rem * var(--spacing-scale, 1));
+}
+
+.compact .py-6 {
+  padding-top: calc(1.5rem * var(--spacing-scale, 1));
+  padding-bottom: calc(1.5rem * var(--spacing-scale, 1));
+}
+
+.compact .py-4 {
+  padding-top: calc(1rem * var(--spacing-scale, 1));
+  padding-bottom: calc(1rem * var(--spacing-scale, 1));
+}
+
 /* Custom styles for the Claude-Flow Dashboard */
 
 .dashboard-gradient {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.dashboard-gradient-dark {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
 }
 
 .card-hover {
@@ -18,13 +87,36 @@
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
+.dark .card-hover:hover {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
 .animate-pulse-slow {
   animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .scrollbar-thin {
   scrollbar-width: thin;
   scrollbar-color: #cbd5e0 #f7fafc;
+}
+
+.dark .scrollbar-thin {
+  scrollbar-color: #4b5563 #1f2937;
 }
 
 .scrollbar-thin::-webkit-scrollbar {
@@ -35,13 +127,25 @@
   background: #f7fafc;
 }
 
+.dark .scrollbar-thin::-webkit-scrollbar-track {
+  background: #1f2937;
+}
+
 .scrollbar-thin::-webkit-scrollbar-thumb {
   background: #cbd5e0;
   border-radius: 2px;
 }
 
+.dark .scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #4b5563;
+}
+
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
   background: #a0aec0;
+}
+
+.dark .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
 }
 
 /* Status indicators */
@@ -49,24 +153,48 @@
   @apply bg-green-100 text-green-800 border-green-200;
 }
 
+.dark .status-active {
+  @apply bg-green-900/20 text-green-200 border-green-700;
+}
+
 .status-idle {
   @apply bg-gray-100 text-gray-800 border-gray-200;
+}
+
+.dark .status-idle {
+  @apply bg-gray-800 text-gray-200 border-gray-600;
 }
 
 .status-running {
   @apply bg-blue-100 text-blue-800 border-blue-200;
 }
 
+.dark .status-running {
+  @apply bg-blue-900/20 text-blue-200 border-blue-700;
+}
+
 .status-completed {
   @apply bg-green-100 text-green-800 border-green-200;
+}
+
+.dark .status-completed {
+  @apply bg-green-900/20 text-green-200 border-green-700;
 }
 
 .status-failed {
   @apply bg-red-100 text-red-800 border-red-200;
 }
 
+.dark .status-failed {
+  @apply bg-red-900/20 text-red-200 border-red-700;
+}
+
 .status-error {
   @apply bg-red-100 text-red-800 border-red-200;
+}
+
+.dark .status-error {
+  @apply bg-red-900/20 text-red-200 border-red-700;
 }
 
 /* Task priority indicators */
@@ -90,21 +218,41 @@
   @apply bg-gray-300;
 }
 
+.dark .priority-background {
+  @apply bg-gray-600;
+}
+
 /* Model type indicators */
 .model-chat {
   @apply bg-blue-100 text-blue-800;
+}
+
+.dark .model-chat {
+  @apply bg-blue-900/20 text-blue-200;
 }
 
 .model-completion {
   @apply bg-purple-100 text-purple-800;
 }
 
+.dark .model-completion {
+  @apply bg-purple-900/20 text-purple-200;
+}
+
 .model-embedding {
   @apply bg-green-100 text-green-800;
 }
 
+.dark .model-embedding {
+  @apply bg-green-900/20 text-green-200;
+}
+
 .model-vision {
   @apply bg-yellow-100 text-yellow-800;
+}
+
+.dark .model-vision {
+  @apply bg-yellow-900/20 text-yellow-200;
 }
 
 /* Loading animations */
@@ -184,13 +332,25 @@
   border-radius: 4px;
 }
 
+.dark .custom-scrollbar::-webkit-scrollbar-track {
+  background: #374151;
+}
+
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 4px;
 }
 
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #6b7280;
+}
+
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
 }
 
 /* Task execution progress bar */
@@ -209,6 +369,18 @@
   }
 }
 
+/* Glassmorphism effect */
+.glass {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.dark .glass {
+  background: rgba(31, 41, 55, 0.25);
+  border: 1px solid rgba(75, 85, 99, 0.18);
+}
+
 /* Responsive design utilities */
 @media (max-width: 640px) {
   .mobile-hide {
@@ -220,13 +392,135 @@
   .tablet-hide {
     display: none;
   }
+  
+  .compact .p-6 {
+    padding: 1rem;
+  }
+  
+  .compact .py-6 {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
 }
 
-/* Dark mode utilities (for future use) */
-@media (prefers-color-scheme: dark) {
-  .dark-mode {
-    --tw-bg-opacity: 1;
-    background-color: rgb(17 24 39 / var(--tw-bg-opacity));
-    color: white;
+/* Focus styles for accessibility */
+*:focus {
+  outline: none;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.dark *:focus-visible {
+  outline-color: #60a5fa;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .card-hover {
+    border: 2px solid currentColor;
   }
+  
+  .status-active,
+  .status-running,
+  .status-completed,
+  .status-failed,
+  .status-error {
+    border-width: 2px;
+    font-weight: 600;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .animate-pulse,
+  .animate-spin,
+  .animate-bounce {
+    animation: none;
+  }
+}
+
+/* Print styles */
+@media print {
+  .sidebar,
+  .mobile-hide,
+  .no-print {
+    display: none !important;
+  }
+  
+  .main-content {
+    margin-left: 0 !important;
+  }
+  
+  * {
+    background: white !important;
+    color: black !important;
+  }
+}
+
+/* Smooth sidebar transition */
+.sidebar-transition {
+  transition: width 0.3s ease, margin 0.3s ease;
+}
+
+/* Enhanced button styles */
+.btn-primary {
+  @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+}
+
+.dark .btn-primary {
+  @apply bg-blue-500 hover:bg-blue-600;
+}
+
+.btn-secondary {
+  @apply bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+}
+
+.dark .btn-secondary {
+  @apply bg-gray-700 hover:bg-gray-600 text-gray-300;
+}
+
+.btn-danger {
+  @apply bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+}
+
+.dark .btn-danger {
+  @apply bg-red-500 hover:bg-red-600;
+}
+
+/* Enhanced form styles */
+.form-input {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200;
+}
+
+.dark .form-input {
+  @apply bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:ring-blue-400;
+}
+
+.form-select {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 bg-white;
+}
+
+.dark .form-select {
+  @apply bg-gray-800 border-gray-600 text-white focus:ring-blue-400;
+}
+
+/* Loading skeleton improvements */
+.skeleton {
+  @apply animate-pulse bg-gray-200 rounded;
+}
+
+.dark .skeleton {
+  @apply bg-gray-700;
 }
